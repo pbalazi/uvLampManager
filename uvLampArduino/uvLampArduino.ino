@@ -11,6 +11,14 @@ static int LCD_ADDRESS = 0x3F;
 static int LCD_LINES = 2;
 static int LCD_CHARS = 16;
 static int EEPROM_CONFIG_ADDR = 0;
+static int RELAY1 = 9;
+static int RELAY2 = 10;
+static int RELAY3 = 11;
+
+static String msg_en[15] = {"","","","","","","","","","","","","","",""};
+static String msg_de[15] = {"","","","","","","","","","","","","","",""};
+static String msg_cz[15] = {"","","","","","","","","","","","","","",""};
+static String msg_it[15] = {"","","","","","","","","","","","","","",""};
 
 // Structure which stores current status of exact buttons and semaphore that any button is down or not
 struct buttons {
@@ -29,6 +37,9 @@ struct buttons {
   // button with center OK
   bool ok = false;
   int okPin = 4;
+  // button which detect closing of the lit
+  bool litClosed = false;
+  int litClosedPin = 12;
   
   // button with uv lamp symbol
   bool uv = false;
@@ -41,6 +52,12 @@ struct buttons {
   bool anyPressed  = false;
 };
 
+// structure convering relays
+struct relay {
+  int lightPin = 0;
+  bool lightOn = false;
+};
+
 // structure with setup loaded from persistent ram
 struct persistentConfig {
   int cycleDelay = 300;
@@ -48,6 +65,11 @@ struct persistentConfig {
 
 // setup instance of structure
 buttons btns;
+// setup instance of relays
+relay r1;
+relay r2;
+relay r3;
+
 // setup config object
 persistentConfig cfg;
 // variable which helps to evaluate buttons
@@ -63,7 +85,7 @@ void detectCurrentButtonsStatus() {
   btns.anyPressed = false;
   // process all buttons
   btnVal = digitalRead(btns.upArrowPin);
-  if(btnVal == 0) {
+  if(btnVal == LOW) {
     btns.upArrow = true;
     btns.anyPressed = true;
   }
@@ -71,7 +93,7 @@ void detectCurrentButtonsStatus() {
     btns.upArrow = false;
   }
   btnVal = digitalRead(btns.leftArrowPin);
-  if(btnVal == 0) {
+  if(btnVal == LOW) {
     btns.leftArrow = true;
     btns.anyPressed = true;
   }
@@ -79,7 +101,7 @@ void detectCurrentButtonsStatus() {
    btns.leftArrow = false; 
   }
   btnVal = digitalRead(btns.downArrowPin);
-    if(btnVal == 0) {
+    if(btnVal == LOW) {
     btns.downArrow = true;
     btns.anyPressed = true;
   }
@@ -87,7 +109,7 @@ void detectCurrentButtonsStatus() {
    btns.downArrow = false; 
   }
   btnVal = digitalRead(btns.rightArrowPin);
-    if(btnVal == 0) {
+    if(btnVal == LOW) {
     btns.rightArrow = true;
     btns.anyPressed = true;
   }
@@ -95,7 +117,7 @@ void detectCurrentButtonsStatus() {
    btns.rightArrow = false; 
   }
   btnVal = digitalRead(btns.okPin);
-    if(btnVal == 0) {
+    if(btnVal == LOW) {
     btns.ok = true;
     btns.anyPressed = true;
   }
@@ -103,7 +125,7 @@ void detectCurrentButtonsStatus() {
    btns.ok = false; 
   }
   btnVal = digitalRead(btns.uvPin);
-    if(btnVal == 0) {
+    if(btnVal == LOW) {
     btns.uv = true;
     btns.anyPressed = true;
   }
@@ -111,12 +133,20 @@ void detectCurrentButtonsStatus() {
    btns.uv = false; 
   }
   btnVal = digitalRead(btns.lightPin);
-    if(btnVal == 0) {
+    if(btnVal == LOW) {
     btns.light = true;
     btns.anyPressed = true;
   }
   else {
    btns.light = false; 
+  }
+  btnVal = digitalRead(btns.litClosedPin);
+    if(btnVal == LOW) {
+    btns.litClosed = true;
+    btns.anyPressed = false; // this is special input, not consider as standard button
+  }
+  else {
+   btns.litClosed = false; 
   }
 }
 
@@ -135,7 +165,61 @@ void printCurrentButtonsStatus(){
   if(outStr != "") {
     Serial.println(outStr);
   }
-  
+}
+
+// setup initals for relays
+void setupRelays() {
+  r1.lightPin = RELAY1;
+  pinMode(r1.lightPin, OUTPUT);
+  digitalWrite(r1.lightPin, HIGH);  
+  r2.lightPin = RELAY2;
+  pinMode(r2.lightPin, OUTPUT);
+  digitalWrite(r2.lightPin, HIGH);
+  r3.lightPin = RELAY3;
+  pinMode(r3.lightPin, OUTPUT);  
+  digitalWrite(r3.lightPin, HIGH);
+}
+
+// up/ down relay, specific which relay and put 'up' or 'down' word as action
+// third param is boolen and if true, you have to add also fourth argument which is current status of lit button (also bool)
+// return value: 0=ok, -1=unknown action, -2=action up, but lit is not closed
+int setRelay(struct relay *rel, String action, bool checkLitButton = false, int litButtonStatus = false) {
+  int retVal = 0;
+  Serial.println("DEBUG:Relay - Status: " + String(rel->lightOn));
+  // process through condition tree
+  if(action == "up") {
+    if(checkLitButton) {
+      // power up the relay if lit button is pressed - lit cover closed
+      if (litButtonStatus) {
+        // do it
+        digitalWrite(rel->lightPin, LOW);
+        rel->lightOn = true;
+        Serial.println("DEBUG:Relay " + String(rel->lightPin) + " check lit and up.");
+      }
+      else {
+        retVal = -2;
+        Serial.println("DEBUG:Relay error - lit is NOT OK.");
+      }
+    }
+    else {
+      // do it - no lit check required
+      digitalWrite(rel->lightPin, LOW);
+      rel->lightOn = true;
+      Serial.println("DEBUG:Relay " + String(rel->lightPin) + " up - no lit check.");
+    }
+  }
+  else if (action == "down") {
+    // power off it
+    digitalWrite(rel->lightPin, HIGH);
+    rel->lightOn = false;
+    Serial.println("DEBUG:Relay " + String(rel->lightPin) + " down.");
+  }
+  else {
+    retVal = -1;
+    Serial.println("DEBUG:Relay - unknown command.");
+  }
+  // return proper value
+  return retVal;
 }
 
 // show text on display
@@ -181,8 +265,11 @@ void setup() {
   pinMode(btns.okPin,INPUT_PULLUP);
   pinMode(btns.uvPin,INPUT_PULLUP);
   pinMode(btns.lightPin,INPUT_PULLUP);
-  digitalWrite(btns.lightPin, HIGH);
+  pinMode(btns.litClosedPin,INPUT_PULLUP);
+  //digitalWrite(btns.lightPin, HIGH);
 
+  // setup relays
+  setupRelays();
 }
 
 void loop() {
@@ -205,7 +292,26 @@ void loop() {
   if(btns.uv) {
       EEPROM.put(EEPROM_CONFIG_ADDR, cfg);
   }
-  
+
+  // if press ok, detect status of lit
+  if(btns.ok) {
+    showText("Is lit closed?",String(btns.litClosed),"");
+  }
+
+  // if press light, poweron relay
+  if(btns.light) {
+    if (r1.lightOn == false) {
+      setRelay(&r1, "up", true, btns.litClosed);
+      setRelay(&r2, "up", true, btns.litClosed);
+    }
+  }
+  else {
+    // if relay is up, then get it down
+    if(r1.lightOn) {
+      setRelay(&r1, "down");
+      setRelay(&r2, "down");
+    }
+  }
   printCurrentButtonsStatus();
 
   // delay for configured value
