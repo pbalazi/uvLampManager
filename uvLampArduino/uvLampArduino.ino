@@ -2,9 +2,9 @@
 // Created on 2018-07-24 by Petr Balazi - pbalazi@gmai.com
 
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
 #include <EEPROM.h>
 #include <DS3231.h>
+#include <LiquidCrystal_I2C.h>
 
 // definitions
 
