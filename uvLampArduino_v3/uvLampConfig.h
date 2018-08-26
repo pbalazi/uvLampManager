@@ -50,7 +50,7 @@ enum frameTypes {
 };
 
 // texts for menu - all languages
-const char t0011_cz[] PROGMEM = "PCR Box"; 
+/*const char t0011_cz[] PROGMEM = "PCR Box"; 
 const char t0011_en[] PROGMEM = "na";
 const char t0011_de[] PROGMEM = "na";
 const char* const t0011[] PROGMEM = {t0011_cz, t0011_en, t0011_de};
@@ -75,7 +75,7 @@ const char* const t0031[] PROGMEM = {t0031_cz, t0031_en, t0031_de};
 const char t0032_cz[] PROGMEM = "dekontaminace"; 
 const char t0032_en[] PROGMEM = "na";
 const char t0032_de[] PROGMEM = "na";
-const char* const t0032[] PROGMEM = {t0032_cz, t0032_en, t0032_de};
+const char* const t0032[] PROGMEM = {t0032_cz, t0032_en, t0032_de};*/
 
 
 const char t1000[] PROGMEM = "PCR Box";
@@ -112,16 +112,20 @@ const char t1020[] PROGMEM = "Vypnuta";
 const char t1021[] PROGMEM = "Casovana";
 const char t1022[] PROGMEM = "Okamzita";
 
-const char t1023[] PROGMEM = "";
-const char t1024[] PROGMEM = "";
-const char t1025[] PROGMEM = "";
-const char t1026[] PROGMEM = "";
-const char t1027[] PROGMEM = "";
-const char t1028[] PROGMEM = "";
-const char t1029[] PROGMEM = "";
-const char t1030[] PROGMEM = "";
-const char t1031[] PROGMEM = "";
-const char t1032[] PROGMEM = "";
+const char t1023[] PROGMEM = "Casovana dekon-";
+const char t1024[] PROGMEM = "taminace vypnuta";
+
+const char t1025[] PROGMEM = "Zavrete viko";
+const char t1026[] PROGMEM = "pro pokracovani";
+
+const char t1027[] PROGMEM = "Dekon. prerusena";
+const char t1028[] PROGMEM = "Pokracovat?";
+const char t1029[] PROGMEM = "Prerusit?";
+
+const char t1030[] PROGMEM = "Automat. dek.:";
+const char t1031[] PROGMEM = "Zapnuto";
+const char t1032[] PROGMEM = "Vypnuto";
+
 const char t1033[] PROGMEM = "";
 const char t1034[] PROGMEM = "";
 const char t1035[] PROGMEM = "";
@@ -130,7 +134,10 @@ const char t1037[] PROGMEM = "";
 const char t1038[] PROGMEM = "";
 const char t1039[] PROGMEM = "";
 
-const char* const czech[] PROGMEM = { t1000, t1001, t1002, t1003, t1006, t1007, t1008, t1010, t1011, t1012, t1014, t1016, t1017, t1018, t1019, t1020, t1021, t1022, t1023, t1024, t1025, t1026, t1027, t1028, t1029, t1030, t1031, t1032, t1033, t1034, t1035, t1036, t1037, t1038, t1039 };
+const char* const czech[] PROGMEM = { t1000, t1001, t1002, t1003, t1006, t1007, t1008, t1010, t1011, t1012, //00-09
+                                      t1014, t1016, t1017, t1018, t1019, t1020, t1021, t1022, t1023, t1024, //10-19
+                                      t1025, t1026, t1027, t1028, t1029, t1030, t1031, t1032, t1033, t1034, //20-29
+                                      t1035, t1036, t1037, t1038, t1039 };
 
 
 const char t2000[] PROGMEM = "PCR Box";
@@ -167,13 +174,16 @@ const char t2020[] PROGMEM = "Vypnuta";
 const char t2021[] PROGMEM = "Casovana";
 const char t2022[] PROGMEM = "Okamzita";
 
-const char t2023[] PROGMEM = "";
-const char t2024[] PROGMEM = "";
-const char t2025[] PROGMEM = "";
-const char t2026[] PROGMEM = "";
-const char t2027[] PROGMEM = "";
-const char t2028[] PROGMEM = "";
-const char t2029[] PROGMEM = "";
+const char t2023[] PROGMEM = "Casovana dekon-";
+const char t2024[] PROGMEM = "taminace vypnuta";
+
+const char t2025[] PROGMEM = "Zavrete viko";
+const char t2026[] PROGMEM = "pro pokracovani";
+
+const char t2027[] PROGMEM = "Dekon. prerusena";
+const char t2028[] PROGMEM = "Pokracovat?";
+const char t2029[] PROGMEM = "Prerusit?";
+
 const char t2030[] PROGMEM = "";
 const char t2031[] PROGMEM = "";
 const char t2032[] PROGMEM = "";
@@ -185,7 +195,10 @@ const char t2037[] PROGMEM = "";
 const char t2038[] PROGMEM = "";
 const char t2039[] PROGMEM = "";
 
-const char* const english[] PROGMEM = { t2000, t2001, t2002, t2003, t2006, t2007, t2008, t2010, t2011, t2012, t2014, t2016, t2017, t2018, t2019, t2020, t2021, t2022, t2023, t2024, t2025, t2026, t2027, t2028, t2029, t2030, t2031, t2032, t2033, t2034, t2035, t2036, t2037, t2038, t2039 };
+const char* const english[] PROGMEM = { t2000, t2001, t2002, t2003, t2006, t2007, t2008, t2010, t2011, t2012, //00-09
+                                        t2014, t2016, t2017, t2018, t2019, t2020, t2021, t2022, t2023, t2024, //10-19
+                                        t2025, t2026, t2027, t2028, t2029, t2030, t2031, t2032, t2033, t2034, //20-29
+                                        t2035, t2036, t2037, t2038, t2039 };
 
 
 

@@ -228,6 +228,14 @@ void startWait(Frame* frame) {
   cfg.reqToPrint = true;
 }
 
+void wait5sec(Frame* frame) {
+  dateTime = rtc.getDateTime();
+  
+  if ((dateTime.unixtime - lastDateTime) > 5) {
+    cfg.curFrame = 2;
+  }
+}
+
 void getDatetimeForPrint(Frame* frame) {
   dateTime = rtc.getDateTime();
 
@@ -254,7 +262,6 @@ void mainMenuScrollDown(Frame* frame) {
 void getLastDecontamination(Frame* frame) {
   //strcpy_P(frame->topLine, t1018);
   sprintf(frame->bottomLine, "neco");
-  setLanguage(1);
 }
 
 void manDecFrame_btnOK(Frame* frame) {
@@ -276,9 +283,6 @@ Frame* frames[20];
 
 void setup()
 {
-    /*DisplayFrame* frame000 = ;
-    DisplayFrame* frame001 = ;
-    DisplayFrame* frame002 = ;*/
 
     // inicialize serial console
     Serial.begin(9600);
@@ -292,12 +296,8 @@ void setup()
 
     setLanguage(0);
     Serial.println((int) cfg.curLang);
-    
-    /*frames[0] = new DisplayFrame(t1000, t1001);
-    frames[1] = new DisplayFrame(t1002, t1003);
-    frames[2] = new TimeFrame();
-    frames[3] = new DisplayFrame(t1004, t1005);*/
 
+    //boot frame 1
     frames[0] = new Frame;
     tmpFrame = frames[0];
     tmpFrame->type = FT_PROGMEM_PROGMEM_2;
@@ -305,6 +305,7 @@ void setup()
     tmpFrame->bottomLineN = 1;
     tmpFrame->afterPrint = &startWait;
 
+    //boot frame 2
     frames[1] = new Frame;
     tmpFrame = frames[1];
     tmpFrame->type = FT_PROGMEM_PROGMEM_2;
@@ -312,6 +313,7 @@ void setup()
     tmpFrame->bottomLineN = 3;
     tmpFrame->afterPrint = &startWait;
 
+    //datetime (main) frame
     frames[2] = new Frame;
     tmpFrame = frames[2];
     tmpFrame->type = FT_SRAM_SRAM;
@@ -319,7 +321,8 @@ void setup()
     tmpFrame->bottomLine = dynamicBottomLine;
     tmpFrame->beforePrint = &getDatetimeForPrint;
     tmpFrame->btnOK = &datetimeFrame_btnOK;
-    
+
+    //main menu -- entry #1
     frames[3] = new Frame;
     tmpFrame = frames[3];
     tmpFrame->type = FT_PROGMEM_PROGMEM_2;
@@ -328,7 +331,7 @@ void setup()
     tmpFrame->flags = FRAME_FLAG_TL_ARROW | FRAME_FLAG_BL_ARROW;
     tmpFrame->btnUp = &mainMenuScrollUp;
     tmpFrame->btnDown = &mainMenuScrollDown;
-    tmpFrame->btnOK = &manDecFrame_btnOK;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 10; };
     
     frames[4] = new Frame;
     tmpFrame = frames[4];
@@ -338,6 +341,7 @@ void setup()
     tmpFrame->flags = FRAME_FLAG_TL_ARROW | FRAME_FLAG_BL_ARROW;
     tmpFrame->btnUp = &mainMenuScrollUp;
     tmpFrame->btnDown = &mainMenuScrollDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 18; };
 
     //3
     frames[5] = new Frame;
@@ -358,6 +362,7 @@ void setup()
     tmpFrame->btnUp = &mainMenuScrollUp;
     tmpFrame->btnDown = &mainMenuScrollDown;
 
+    //5
     frames[7] = new Frame;
     tmpFrame = frames[7];
     tmpFrame->type = FT_PROGMEM_PROGMEM_2;
@@ -376,6 +381,7 @@ void setup()
     tmpFrame->btnUp = &mainMenuScrollUp;
     tmpFrame->btnDown = &mainMenuScrollDown;
 
+    //7 -- posledni dekontaminace (datum a cas)
     frames[9] = new Frame;
     tmpFrame = frames[9];
     tmpFrame->type = FT_PROGMEM_SRAM_2;
@@ -403,6 +409,7 @@ void setup()
     tmpFrame->bottomLineN = 16;
     tmpFrame->btnUp = &manDecMenuScrollUp;
     tmpFrame->btnDown = &manDecMenuScrollDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 13; };
     tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
     
     //manualni dekontaminace okamzita
@@ -413,7 +420,79 @@ void setup()
     tmpFrame->bottomLineN = 17;
     tmpFrame->btnUp = &manDecMenuScrollUp;
     tmpFrame->btnDown = &manDecMenuScrollDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 14; };
     tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+
+    //casovana dekontaminace vypnuta
+    frames[13] = new Frame;
+    tmpFrame = frames[13];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 18;
+    tmpFrame->bottomLineN = 19;
+    tmpFrame->beforePrint = &wait5sec;
+
+    //zavrete viko pro pokracovani
+    frames[14] = new Frame;
+    tmpFrame = frames[14];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 20;
+    tmpFrame->bottomLineN = 21;
+    tmpFrame->beforePrint = [](Frame* f) {
+      dateTime = rtc.getDateTime();
+      
+      if ((dateTime.unixtime - lastDateTime) > 5) {
+        cfg.curFrame = 15;
+      }
+    };
+
+    //dekontaminace prerusena - pokracovat?
+    frames[15] = new Frame;
+    tmpFrame = frames[15];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 22;
+    tmpFrame->bottomLineN = 23;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnUp = tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 16; };
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 14; };
+
+    //dekontaminace prerusena - prerusit?
+    frames[16] = new Frame;
+    tmpFrame = frames[16];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 22;
+    tmpFrame->bottomLineN = 24;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnUp = tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 15; };
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 17; };
+
+    //dekontaminace prerusena
+    frames[17] = new Frame;
+    tmpFrame = frames[17];
+    tmpFrame->type = FT_PROGMEM_SRAM_2;
+    tmpFrame->topLineN = 22;
+    tmpFrame->bottomLine = (char*) "";
+    tmpFrame->beforePrint = &wait5sec;
+
+    //automaticka dekontaminace - zapnuto
+    frames[18] = new Frame;
+    tmpFrame = frames[18];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 25;
+    tmpFrame->bottomLineN = 26;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnUp = tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 19; };
+    //tmpFrame->btnOK = TODO
+
+    //automaticka dekontaminace - vypnuto
+    frames[19] = new Frame;
+    tmpFrame = frames[19];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 25;
+    tmpFrame->bottomLineN = 27;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnUp = tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 18; };
+    //tmpFrame->btnOK = TODO
+    
     
     
     // variables
