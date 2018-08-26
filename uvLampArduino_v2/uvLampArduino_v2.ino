@@ -1,4 +1,3 @@
-
 // Main program for uv Lamp Manager
 // Created on 2018-07-24 by Petr Balazi - pbalazi@gmai.com
 
