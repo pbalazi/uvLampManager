@@ -4,10 +4,11 @@
 
 #include <Wire.h>
 #include <EEPROM.h>
-#include <DS3231.h>
 #include <LiquidCrystal_I2C.h>
 #include <JC_Button.h>              // https://github.com/JChristensen/JC_Button
 #include "uvLampConfig.h"           // project variables config library
+//#include <DS3231.h>
+#include "moje_DS3231.h"
 
 // define buttons available
 Button btnUp(UP_PIN), btnDown(DOWN_PIN), btnLeft(LEFT_PIN), btnRight(RIGHT_PIN), btnOk(OK_PIN), btnLight(LIGHT_PIN), btnUv(UV_PIN), btnLit(LIT_PIN);    // define the buttons
@@ -278,6 +279,76 @@ void manDecMenuScrollDown(Frame* frame) {
   cfg.curFrame = ((cfg.curFrame + numOfItems - 10 + 1) % numOfItems) + 10;
 }
 
+void setDecHourTime_beforePrint(Frame* frame) {
+  *(frame->bottomLine + 17) = (byte) (*(frame->bottomLine + 17) % 24);
+  *(frame->bottomLine + 18) = (byte) (*(frame->bottomLine + 18) % 60);
+  
+  byte hour = (byte) *(frame->bottomLine + 17);
+  byte minute = (byte) *(frame->bottomLine + 18);
+
+  sprintf(frame->bottomLine, ">%02d:%02d", hour, minute);
+}
+
+void setDecHourTime_btnUp(Frame* frame) {
+  *(frame->bottomLine + 17) = (byte) ((((int) *(frame->bottomLine + 17)) + 24 + 1) % 24);
+}
+
+void setDecHourTime_btnDown(Frame* frame) {
+  *(frame->bottomLine + 17) = (byte) ((((int) *(frame->bottomLine + 17)) + 24 - 1) % 24);
+}
+
+void setDecMinuteTime_beforePrint(Frame* frame) {
+  *(frame->bottomLine + 17) = (byte) (*(frame->bottomLine + 17) % 24);
+  *(frame->bottomLine + 18) = (byte) (*(frame->bottomLine + 18) % 60);
+  
+  byte hour = (byte) *(frame->bottomLine + 17);
+  byte minute = (byte) *(frame->bottomLine + 18);
+
+  sprintf(frame->bottomLine, " %02d>%02d", hour, minute);
+}
+
+void setDecMinuteTime_btnUp(Frame* frame) {
+  *(frame->bottomLine + 18) = (byte) ((((int) *(frame->bottomLine + 18)) + 60 + 1) % 60);
+}
+
+void setDecMinuteTime_btnDown(Frame* frame) {
+  *(frame->bottomLine + 18) = (byte) ((((int) *(frame->bottomLine + 18)) + 60 - 1) % 60);
+}
+
+void setTimedDecLength_beforePrint(Frame* frame) {
+  *(frame->bottomLine + 17) = (byte) (*(frame->bottomLine + 17) % 6);
+
+  byte dlength = (byte) *(frame->bottomLine + 17);
+
+  sprintf(frame->bottomLine, "%02d min", dlength*5 + 15);
+}
+
+void setTimedDecLength_btnUp(Frame* frame) {
+  *(frame->bottomLine + 17) = (byte) ((*(frame->bottomLine + 17) + 6 + 1) % 6);
+}
+
+void setTimedDecLength_btnDown(Frame* frame) {
+  *(frame->bottomLine + 17) = (byte) ((*(frame->bottomLine + 17) + 6 - 1) % 6);
+}
+
+
+void setInstantDecLength_beforePrint(Frame* frame) {
+  *(frame->bottomLine + 18) = (byte) (*(frame->bottomLine + 18) % 6);
+
+  byte dlength = (byte) *(frame->bottomLine + 18);
+
+  sprintf(frame->bottomLine, "%02d min", dlength*5 + 15);
+}
+
+void setInstantDecLength_btnUp(Frame* frame) {
+  *(frame->bottomLine + 18) = (byte) ((*(frame->bottomLine + 18) + 6 + 1) % 6);
+}
+
+void setInstantDecLength_btnDown(Frame* frame) {
+  *(frame->bottomLine + 18) = (byte) ((*(frame->bottomLine + 18) + 6 - 1) % 6);
+}
+
+
 
 Frame* frames[20];
 
@@ -290,8 +361,14 @@ void setup()
         ; // wait for serial port to connect. Needed for native USB port only
     }
 
+
     char* dynamicTopLine = (char*) malloc(20);
+    
+    // 20 bytes -- 17 bytes for display row (16 bytes + '\0') + 3 bytes for general use
     char* dynamicBottomLine = (char*) malloc(20);
+
+
+    
     Frame* tmpFrame = NULL;
 
     setLanguage(0);
@@ -352,6 +429,7 @@ void setup()
     tmpFrame->flags = FRAME_FLAG_TL_ARROW | FRAME_FLAG_BL_ARROW;
     tmpFrame->btnUp = &mainMenuScrollUp;
     tmpFrame->btnDown = &mainMenuScrollDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 20; };
 
     frames[6] = new Frame;
     tmpFrame = frames[6];
@@ -361,6 +439,7 @@ void setup()
     tmpFrame->flags = FRAME_FLAG_TL_ARROW | FRAME_FLAG_BL_ARROW;
     tmpFrame->btnUp = &mainMenuScrollUp;
     tmpFrame->btnDown = &mainMenuScrollDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 22; };
 
     //5
     frames[7] = new Frame;
@@ -492,7 +571,71 @@ void setup()
     tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
     tmpFrame->btnUp = tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 18; };
     //tmpFrame->btnOK = TODO
-    
+
+    //nastaveni casu dekontaminace - nastaveni hodin
+    frames[20] = new Frame;
+    tmpFrame = frames[20];
+    tmpFrame->type = FT_PROGMEM_SRAM_2;
+    tmpFrame->topLineN = 28;
+    tmpFrame->bottomLine = dynamicBottomLine;
+    tmpFrame->beforePrint = &setDecHourTime_beforePrint;
+    tmpFrame->btnUp = &setDecHourTime_btnUp;
+    tmpFrame->btnDown = &setDecHourTime_btnDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 21; };
+
+    //nastaveni casu dekontaminace - nastaveni minut
+    frames[21] = new Frame;
+    tmpFrame = frames[21];
+    tmpFrame->type = FT_PROGMEM_SRAM_2;
+    tmpFrame->topLineN = 28;
+    tmpFrame->bottomLine = dynamicBottomLine;
+    tmpFrame->beforePrint = &setDecMinuteTime_beforePrint;
+    tmpFrame->btnUp = &setDecMinuteTime_btnUp;
+    tmpFrame->btnDown = &setDecMinuteTime_btnDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 20; };
+
+    //delka casovane dekontaminace
+    frames[22] = new Frame;
+    tmpFrame = frames[22];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 29;
+    tmpFrame->bottomLineN = 5;
+    tmpFrame->flags = FRAME_FLAG_TL_ARROW | FRAME_FLAG_BL_ARROW;
+    tmpFrame->btnUp = tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 24; };
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 23; };
+
+    //delka casovane dekontaminace - nastaveni delky
+    frames[23] = new Frame;
+    tmpFrame = frames[23];
+    tmpFrame->type = FT_PROGMEM_SRAM_2;
+    tmpFrame->topLineN = 30;
+    tmpFrame->bottomLine = dynamicBottomLine;
+    tmpFrame->beforePrint = &setTimedDecLength_beforePrint;
+    tmpFrame->btnUp = &setTimedDecLength_btnUp;
+    tmpFrame->btnDown = &setTimedDecLength_btnDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 22; };
+
+    //delka okamzite dekontaminace
+    frames[24] = new Frame;
+    tmpFrame = frames[24];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 31;
+    tmpFrame->bottomLineN = 5;
+    tmpFrame->flags = FRAME_FLAG_TL_ARROW | FRAME_FLAG_BL_ARROW;
+    tmpFrame->btnUp = tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 22; };
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 25; };
+
+
+    //delka okamzite dekontaminace - nastaveni delky
+    frames[25] = new Frame;
+    tmpFrame = frames[25];
+    tmpFrame->type = FT_PROGMEM_SRAM_2;
+    tmpFrame->topLineN = 30;
+    tmpFrame->bottomLine = dynamicBottomLine;
+    tmpFrame->beforePrint = &setInstantDecLength_beforePrint;
+    tmpFrame->btnUp = &setInstantDecLength_btnUp;
+    tmpFrame->btnDown = &setInstantDecLength_btnDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 24; };
     
     
     // variables
@@ -511,6 +654,8 @@ void setup()
     btnUv.begin();
     btnLit.begin();
 
+    
+    
     // start rtc
     rtc.begin();
     // one time setup
@@ -519,6 +664,8 @@ void setup()
     // load config from eeprom
     //EEPROM.get(EEPROM_CONFIG_ADDR, cfg);
 
+    Serial.println("OK");
+    
     // inicialize display
     lcd.init();
     // setup backlight

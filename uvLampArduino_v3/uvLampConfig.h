@@ -126,10 +126,13 @@ const char t1030[] PROGMEM = "Automat. dek.:";
 const char t1031[] PROGMEM = "Zapnuto";
 const char t1032[] PROGMEM = "Vypnuto";
 
-const char t1033[] PROGMEM = "";
-const char t1034[] PROGMEM = "";
-const char t1035[] PROGMEM = "";
-const char t1036[] PROGMEM = "";
+const char t1033[] PROGMEM = "Zadejte cas dek:";
+
+const char t1034[] PROGMEM = "Delka casovane";
+const char t1035[] PROGMEM = "Delka dekontam.:";
+
+const char t1036[] PROGMEM = "Delka okamzite";
+
 const char t1037[] PROGMEM = "";
 const char t1038[] PROGMEM = "";
 const char t1039[] PROGMEM = "";
