@@ -56,92 +56,6 @@ typedef struct Frame_ {
 
 
 
-/*
-class DisplayFrame {
-  const char* topLine;
-  const char* bottomLine;
-  char type = 0;
-
-public:
-  DisplayFrame() {}
-  DisplayFrame(const char* topLine, const char* bottomLine);
-  ~DisplayFrame() {}
-
-  char getType() {
-    return this->type;
-  }
-  
-  void btnOK();
-  void btnTop();
-  void btnBottom();
-  void btnLeft();
-  void btnRight();
-  void btnUV();
-  void btnLight();
-
-  const char* getTopLine();
-  const char* getBottomLine();
-};
-
-DisplayFrame::DisplayFrame(const char* topLine, const char* bottomLine) {
-  this->topLine = topLine;
-  this->bottomLine = bottomLine;
-}
-
-
-const char* DisplayFrame::getTopLine() {
-  return this->topLine;
-}
-
-const char* DisplayFrame::getBottomLine() {
-  return this->bottomLine;
-}
-
-
-class TimeFrame : public DisplayFrame {
-  char topLine[17];
-  char bottomLine[17];
-  String outTime;
-  String outDate;
-  char type = 1;
-
-public:
-  TimeFrame() {}
-  ~TimeFrame() {}
-
-  char getType() {
-    return this->type;
-  }
-  
-  const char* getTopLine();
-  const char* getBottomLine();
-};
-
-
-const char* TimeFrame::getTopLine() {
-  dateTime = rtc.getDateTime();
-
-  char ahour[3];
-  char aminute[3];
-  char asecond[3];
-
-  sprintf(this->topLine, "%02d:%02d:%02d", dateTime.hour, dateTime.minute, dateTime.second);
-  Serial.println(this->topLine);
-        
-  //this->outTime = String(ahour) + ":" + String(aminute) + ":" + String(asecond);
-
-  return this->topLine;
-}
-
-const char* TimeFrame::getBottomLine() {
-  dateTime = rtc.getDateTime();
-  
-  sprintf(this->bottomLine, "%02d.%02d.%0d", dateTime.day, dateTime.month, dateTime.year);
-  //this->outDate = String(dateTime.day) + "." + String(dateTime.month) + "." + String(dateTime.year);
-  
-  return this->bottomLine;
-}*/
-
 
 void setLanguage(byte lang) {
   if (lang == (byte) 0) {
@@ -279,6 +193,10 @@ void manDecMenuScrollDown(Frame* frame) {
   cfg.curFrame = ((cfg.curFrame + numOfItems - 10 + 1) % numOfItems) + 10;
 }
 
+void changeDynamicByte_btnUp_btnDown(char* linePointer, byte bytePointer, byte maxLength, int offset) {
+  *(linePointer + bytePointer) = (byte) ((*(linePointer + bytePointer) + maxLength + offset) % maxLength);
+}
+
 void setDecHourTime_beforePrint(Frame* frame) {
   *(frame->bottomLine + 17) = (byte) (*(frame->bottomLine + 17) % 24);
   *(frame->bottomLine + 18) = (byte) (*(frame->bottomLine + 18) % 60);
@@ -290,11 +208,13 @@ void setDecHourTime_beforePrint(Frame* frame) {
 }
 
 void setDecHourTime_btnUp(Frame* frame) {
-  *(frame->bottomLine + 17) = (byte) ((((int) *(frame->bottomLine + 17)) + 24 + 1) % 24);
+  //*(frame->bottomLine + 17) = (byte) ((((int) *(frame->bottomLine + 17)) + 24 + 1) % 24);
+  changeDynamicByte_btnUp_btnDown(frame->bottomLine, 17, 24, 1);
 }
 
 void setDecHourTime_btnDown(Frame* frame) {
-  *(frame->bottomLine + 17) = (byte) ((((int) *(frame->bottomLine + 17)) + 24 - 1) % 24);
+  //*(frame->bottomLine + 17) = (byte) ((((int) *(frame->bottomLine + 17)) + 24 - 1) % 24);
+  changeDynamicByte_btnUp_btnDown(frame->bottomLine, 17, 24, -1);
 }
 
 void setDecMinuteTime_beforePrint(Frame* frame) {
@@ -308,49 +228,57 @@ void setDecMinuteTime_beforePrint(Frame* frame) {
 }
 
 void setDecMinuteTime_btnUp(Frame* frame) {
-  *(frame->bottomLine + 18) = (byte) ((((int) *(frame->bottomLine + 18)) + 60 + 1) % 60);
+  //*(frame->bottomLine + 18) = (byte) ((((int) *(frame->bottomLine + 18)) + 60 + 1) % 60);
+  changeDynamicByte_btnUp_btnDown(frame->bottomLine, 18, 60, 1);
 }
 
 void setDecMinuteTime_btnDown(Frame* frame) {
-  *(frame->bottomLine + 18) = (byte) ((((int) *(frame->bottomLine + 18)) + 60 - 1) % 60);
+  //*(frame->bottomLine + 18) = (byte) ((((int) *(frame->bottomLine + 18)) + 60 - 1) % 60);
+  changeDynamicByte_btnUp_btnDown(frame->bottomLine, 18, 60, -1);
 }
 
+void setDecLength_beforePrint(char* linePointer, byte bytePointer, byte maxLength) {
+  *(linePointer + bytePointer) = (byte) (((byte) *(linePointer + bytePointer)) % maxLength);
+
+  byte dlength = ((byte) *(linePointer + bytePointer))*5 + 15;
+
+  sprintf(linePointer, "%02d min", dlength);
+}
+
+
+
 void setTimedDecLength_beforePrint(Frame* frame) {
-  *(frame->bottomLine + 17) = (byte) (*(frame->bottomLine + 17) % 6);
-
-  byte dlength = (byte) *(frame->bottomLine + 17);
-
-  sprintf(frame->bottomLine, "%02d min", dlength*5 + 15);
+  setDecLength_beforePrint(frame->bottomLine, 17, 6);
 }
 
 void setTimedDecLength_btnUp(Frame* frame) {
-  *(frame->bottomLine + 17) = (byte) ((*(frame->bottomLine + 17) + 6 + 1) % 6);
+  //*(frame->bottomLine + 17) = (byte) ((*(frame->bottomLine + 17) + 6 + 1) % 6);
+  changeDynamicByte_btnUp_btnDown(frame->bottomLine, 17, 6, 1);
 }
 
 void setTimedDecLength_btnDown(Frame* frame) {
-  *(frame->bottomLine + 17) = (byte) ((*(frame->bottomLine + 17) + 6 - 1) % 6);
+  //*(frame->bottomLine + 17) = (byte) ((*(frame->bottomLine + 17) + 6 - 1) % 6);
+  changeDynamicByte_btnUp_btnDown(frame->bottomLine, 17, 6, -1);
 }
 
 
 void setInstantDecLength_beforePrint(Frame* frame) {
-  *(frame->bottomLine + 18) = (byte) (*(frame->bottomLine + 18) % 6);
-
-  byte dlength = (byte) *(frame->bottomLine + 18);
-
-  sprintf(frame->bottomLine, "%02d min", dlength*5 + 15);
+  setDecLength_beforePrint(frame->bottomLine, 18, 6);
 }
 
 void setInstantDecLength_btnUp(Frame* frame) {
-  *(frame->bottomLine + 18) = (byte) ((*(frame->bottomLine + 18) + 6 + 1) % 6);
+  //*(frame->bottomLine + 18) = (byte) ((*(frame->bottomLine + 18) + 6 + 1) % 6);
+  changeDynamicByte_btnUp_btnDown(frame->bottomLine, 18, 6, 1);
 }
 
 void setInstantDecLength_btnDown(Frame* frame) {
-  *(frame->bottomLine + 18) = (byte) ((*(frame->bottomLine + 18) + 6 - 1) % 6);
+  //*(frame->bottomLine + 18) = (byte) ((*(frame->bottomLine + 18) + 6 - 1) % 6);
+  changeDynamicByte_btnUp_btnDown(frame->bottomLine, 18, 6, -1);
 }
 
 
 
-Frame* frames[20];
+Frame* frames[32];
 
 void setup()
 {
@@ -450,6 +378,7 @@ void setup()
     tmpFrame->flags = FRAME_FLAG_TL_ARROW | FRAME_FLAG_BL_ARROW;
     tmpFrame->btnUp = &mainMenuScrollUp;
     tmpFrame->btnDown = &mainMenuScrollDown;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 26; };
 
     frames[8] = new Frame;
     tmpFrame = frames[8];
@@ -636,6 +565,63 @@ void setup()
     tmpFrame->btnUp = &setInstantDecLength_btnUp;
     tmpFrame->btnDown = &setInstantDecLength_btnDown;
     tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 24; };
+
+    //stav: zapnuto bez UV
+    frames[26] = new Frame;
+    tmpFrame = frames[26];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 32;
+    tmpFrame->bottomLineN = 33;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 27; };
+
+    //rezim: otevreny kryt
+    frames[27] = new Frame;
+    tmpFrame = frames[27];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 34;
+    tmpFrame->bottomLineN = 35;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 26; };
+    tmpFrame->btnUp = [](Frame* f) { cfg.curFrame = 30; };
+    tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 28; };
+
+    //rezim: zavreny kryt
+    frames[28] = new Frame;
+    tmpFrame = frames[28];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 34;
+    tmpFrame->bottomLineN = 36;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 26; };
+    tmpFrame->btnUp = [](Frame* f) { cfg.curFrame = 27; };
+    tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 29; };
+
+    //rezim: pri dekontaminaci
+    frames[29] = new Frame;
+    tmpFrame = frames[29];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 34;
+    tmpFrame->bottomLineN = 37;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 26; };
+    tmpFrame->btnUp = [](Frame* f) { cfg.curFrame = 28; };
+    tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 30; };
+
+    //rezim: stale
+    /*
+    dalsi ramce se nevlezou do pameti UNA, takze dal nemuzu testovat
+    
+    frames[30] = new Frame;
+    tmpFrame = frames[30];
+    tmpFrame->type = FT_PROGMEM_PROGMEM_2;
+    tmpFrame->topLineN = 34;
+    tmpFrame->bottomLineN = 38;
+    tmpFrame->flags = FRAME_FLAG_BL_UD_ARROW;
+    tmpFrame->btnOK = [](Frame* f) { cfg.curFrame = 26; };
+    tmpFrame->btnUp = [](Frame* f) { cfg.curFrame = 29; };
+    tmpFrame->btnDown = [](Frame* f) { cfg.curFrame = 27; };
+    */
     
     
     // variables
@@ -664,7 +650,7 @@ void setup()
     // load config from eeprom
     //EEPROM.get(EEPROM_CONFIG_ADDR, cfg);
 
-    Serial.println("OK");
+    Serial.println(sizeof(Frame));
     
     // inicialize display
     lcd.init();
@@ -695,7 +681,7 @@ void setup()
 void loop()
 {
     static unsigned long rpt(REPEAT_FIRST);              // a variable time that is used to drive the repeats for long presses
-    char buffer[LCD_CHARS + 1];                                     // buffer for dispaly text
+    //char buffer[LCD_CHARS + 1];                                     // buffer for dispaly text
     int lastFrame = cfg.curFrame;
 
     dateTime = rtc.getDateTime();

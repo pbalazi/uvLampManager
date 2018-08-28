@@ -133,14 +133,60 @@ const char t1035[] PROGMEM = "Delka dekontam.:";
 
 const char t1036[] PROGMEM = "Delka okamzite";
 
-const char t1037[] PROGMEM = "";
-const char t1038[] PROGMEM = "";
-const char t1039[] PROGMEM = "";
+const char t1037[] PROGMEM = "Stav:";
+const char t1038[] PROGMEM = "Zapnuto bez UV";
+
+const char t1039[] PROGMEM = "Rezim:";
+const char t1040[] PROGMEM = "Otevreny kryt";
+const char t1041[] PROGMEM = "Zavreny kryt";
+const char t1042[] PROGMEM = "Pri dekont.";
+const char t1043[] PROGMEM = "Stale";
+
+const char t1044[] PROGMEM = "";
+const char t1045[] PROGMEM = "";
+const char t1046[] PROGMEM = "";
+const char t1047[] PROGMEM = "";
+const char t1048[] PROGMEM = "";
+const char t1049[] PROGMEM = "";
+const char t1050[] PROGMEM = "";
+const char t1051[] PROGMEM = "";
+const char t1052[] PROGMEM = "";
+const char t1053[] PROGMEM = "";
+const char t1054[] PROGMEM = "";
+const char t1055[] PROGMEM = "";
+const char t1056[] PROGMEM = "";
+const char t1057[] PROGMEM = "";
+const char t1058[] PROGMEM = "";
+const char t1059[] PROGMEM = "";
+const char t1060[] PROGMEM = "";
+const char t1061[] PROGMEM = "";
+const char t1062[] PROGMEM = "";
+const char t1063[] PROGMEM = "";
+const char t1064[] PROGMEM = "";
+const char t1065[] PROGMEM = "";
+const char t1066[] PROGMEM = "";
+const char t1067[] PROGMEM = "";
+const char t1068[] PROGMEM = "";
+const char t1069[] PROGMEM = "";
+const char t1070[] PROGMEM = "";
+const char t1071[] PROGMEM = "";
+const char t1072[] PROGMEM = "";
+const char t1073[] PROGMEM = "";
+const char t1074[] PROGMEM = "";
+const char t1075[] PROGMEM = "";
+const char t1076[] PROGMEM = "";
+const char t1077[] PROGMEM = "";
+const char t1078[] PROGMEM = "";
+const char t1079[] PROGMEM = "";
 
 const char* const czech[] PROGMEM = { t1000, t1001, t1002, t1003, t1006, t1007, t1008, t1010, t1011, t1012, //00-09
                                       t1014, t1016, t1017, t1018, t1019, t1020, t1021, t1022, t1023, t1024, //10-19
                                       t1025, t1026, t1027, t1028, t1029, t1030, t1031, t1032, t1033, t1034, //20-29
-                                      t1035, t1036, t1037, t1038, t1039 };
+                                      t1035, t1036, t1037, t1038, t1039, t1040, t1041, t1042, t1043, t1044, //30-39
+                                      t1045, t1046, t1047, t1048, t1049, t1050, t1051, t1052, t1053, t1054, //40-49
+                                      t1055, t1056, t1057, t1058, t1059, t1060, t1061, t1062, t1063, t1064, //50-59
+                                      t1065, t1066, t1067, t1068, t1069, t1070, t1071, t1072, t1073, t1074, //60-69
+                                      t1075, t1076, t1077, t1078, t1079 };                                  //70-74
 
 
 const char t2000[] PROGMEM = "PCR Box";
