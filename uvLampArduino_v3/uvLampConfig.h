@@ -25,7 +25,8 @@ const byte
     LCD_LINES = 2,
     LCD_CHARS = 16;
 const unsigned int
-    INITIAL_DELAY = 10000; 
+    //INITIAL_DELAY = 10000;
+    INITIAL_DELAY = 5000; 
 const unsigned int
     TIME_DISPLAY_DELAY = 300;
 
@@ -41,6 +42,7 @@ const byte
     FRAME_FLAG_BL_ARROW = 0b00000001,
     FRAME_FLAG_BL_UD_ARROW = 0b00000100;
 
+//frame types
 enum frameTypes {
   FT_PROGMEM_PROGMEM,
   FT_SRAM_SRAM,
@@ -48,6 +50,26 @@ enum frameTypes {
   FT_PROGMEM_PROGMEM_2,
   FT_PROGMEM_SRAM_2,
 };
+
+//frame definition
+typedef struct Frame_ {
+  byte type = 0;
+  char* topLine = NULL;
+  char* bottomLine = NULL;
+  byte flags = 0b00000000;
+  void (*beforePrint)(Frame_*) = NULL;
+  void (*afterPrint)(Frame_*) = NULL;
+  void (*btnOK)(Frame_*) = NULL;
+  void (*btnUp)(Frame_*) = NULL;
+  void (*btnDown)(Frame_*) = NULL;
+  void (*btnLeft)(Frame_*) = NULL;
+  void (*btnRight)(Frame_*) = NULL;
+  void (*btnUV)(Frame_*) = NULL;
+  void (*btnLight)(Frame_*) = NULL;
+  void (*btnLit)(Frame_*) = NULL;
+  int topLineN = 0;
+  int bottomLineN = 0;
+} Frame;
 
 // texts for menu - all languages
 /*const char t0011_cz[] PROGMEM = "PCR Box"; 
